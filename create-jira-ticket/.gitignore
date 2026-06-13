@@ -1,0 +1,27 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Runtime logs
+*.log
+
+# Build and cache artifacts
+node_modules/
+dist/
+build/
+coverage/
+__pycache__/
+*.pyc
+
+# Environment and local config
+.env
+.env.*
+!.env.example
+

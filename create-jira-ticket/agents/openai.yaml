@@ -1,0 +1,11 @@
+interface:
+  display_name: "Create Jira Ticket"
+  short_description: "Create Jira tickets via Jira MCP"
+  default_prompt: "Use $create-jira-ticket to create a Jira issue from the current context."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "jira_mcp"
+      description: "Jira MCP server"
+policy:
+  allow_implicit_invocation: true
