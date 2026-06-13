@@ -1,0 +1,6 @@
+interface:
+  display_name: "Raise PR and Send to Slack"
+  short_description: "Create pull requests and send Slack review requests"
+  default_prompt: "Use $raise-pr-and-send-to-slack to create a pull request and send its link to Slack for review, defaulting to #development if no channel is specified."
+policy:
+  allow_implicit_invocation: true
