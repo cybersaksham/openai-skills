@@ -1,0 +1,45 @@
+"""Stable product metadata and documentation navigation."""
+
+PRODUCT_NAME = __PRODUCT_NAME_REPR__
+PRODUCT_TAGLINE = __PRODUCT_TAGLINE_REPR__
+ASSET_VERSION = "1"
+
+PAGE_GROUPS = [
+    (
+        "Product",
+        [
+            ("index.html", "Overview"),
+            ("product-flows.html", "Experience and flows"),
+            ("decisions.html", "Decisions"),
+            ("roadmap.html", "Roadmap and boundaries"),
+        ],
+    ),
+    (
+        "Architecture",
+        [
+            ("system-architecture.html", "System overview"),
+            ("repository-blueprint.html", "Repository blueprint"),
+            ("runtime-architecture.html", "Runtime architecture"),
+            ("interaction-surfaces.html", "Interaction surfaces"),
+            ("domain-model.html", "Domain model"),
+            ("data-dictionary.html", "Data dictionary"),
+            ("permissions.html", "Permissions"),
+        ],
+    ),
+    (
+        "Reference",
+        [
+            ("transport-contracts.html", "Transport and interfaces"),
+            ("events-jobs.html", "Events and jobs"),
+            ("integrations.html", "Integrations"),
+            ("operations.html", "Operations"),
+            ("quality.html", "Quality and security"),
+            ("implementation-sequence.html", "Implementation sequence"),
+            ("audit.html", "Documentation audit"),
+            ("coverage.html", "Requirement coverage"),
+        ],
+    ),
+]
+
+# Add feature groups in product language. Every feature declares one of these values.
+FEATURE_GROUPS = ["Core"]

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Write Product Specs"
+  short_description: "Create complete HTML product documentation"
+  default_prompt: "Use $write-product-specs to turn this product idea into standalone HTML product and system documentation under .specs."
