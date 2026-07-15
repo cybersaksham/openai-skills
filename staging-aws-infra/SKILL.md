@@ -1,6 +1,6 @@
 ---
 name: staging-aws-infra
-description: Plan and provision AWS-backed Kubernetes infrastructure for a new GitHub project in Newton School staging only. Use when Codex needs to inspect a repository and create or review staging ECR, CodeBuild, shared-ALB routing, Route53, optional S3/IRSA/CloudFront, and a Kubernetes-cluster-infra pull request. Always run a read-only plan first and wait for explicit user confirmation before any write.
+description: Plan and provision AWS-backed Kubernetes infrastructure for a new GitHub project in Newton School staging only. Use when Codex needs to inspect a repository and create or review staging ECR, CodeBuild, shared-ALB routing, Route53, optional S3/IRSA/CloudFront, a private repository-derived secret-draft JSON, and a Kubernetes-cluster-infra pull request. Always run a read-only plan first and wait for explicit user confirmation before any write.
 ---
 
 # Staging AWS Infra
@@ -26,7 +26,7 @@ Create new-project infrastructure in two strictly separated phases. This skill i
 - Work only in the Kubernetes infra repository supplied by the user. Read its `AGENTS.md` and local runbooks before applying.
 - Create a new branch from current `origin/main` only when the user has explicitly confirmed the apply plan. Never push to `main`, merge the PR, or edit `prod/`.
 - Do not delete or rename files under `clusters/`; Flux uses `prune: true`.
-- Do not decrypt, print, commit plaintext, or invent secret values. Treat SOPS secret values as a human-approved input gate.
+- Do not decrypt, print, commit plaintext, or modify SOPS-encrypted values. Generate a private secret-draft JSON only; the user owns all SOPS edits.
 - Do not automatically delete partially created AWS resources on failure. Report the exact resources created and a safe rollback plan.
 
 ## Inputs to resolve in plan mode
@@ -44,6 +44,8 @@ Require these inputs. Do not select a project name, GitHub repository, topology,
 Use a lower-case DNS-safe slug. Check ECR repository names, target-group names, bucket names, IAM-role names, listener-rule priorities, hostnames, and Kubernetes namespaces for collisions before proposing writes.
 
 If the user did not explicitly choose an optional resource, ask whether to include it. At minimum ask about PostgreSQL, Redis, S3, CloudFront, and AWS integrations such as SES. Include the repository evidence that makes an option relevant, but do not silently enable it.
+
+Derive required environment-key names from the GitHub repository. Do not copy keys from another project or add generic keys. For every discovered key, classify its planned value source as one of: `infra-derived`, `generated-for-approved-infra`, or `user-required`.
 
 ## Plan mode
 
@@ -65,7 +67,7 @@ If the user did not explicitly choose an optional resource, ask whether to inclu
    - DNS records;
    - optional database, Redis, S3, CloudFront, IRSA, and IAM choices;
    - Kubernetes manifests and image pins;
-   - secret-key names only, with unresolved values called out;
+   - a secret-key matrix sourced from the repository: exact key, repository evidence, value source, and whether it will be in the private draft JSON or remains user-required;
    - validation commands and rollback steps.
 9. Explicitly state that no write has occurred and ask for confirmation of that exact plan.
 
@@ -88,6 +90,15 @@ Execute only the approved plan and preserve the requested scope.
 3. S3: create a private encrypted bucket with block-public-access and scoped lifecycle/CORS settings. Prefer a project ServiceAccount plus IRSA and least-privilege bucket/prefix policy; do not use static AWS credentials in application secrets.
 4. CloudFront: create a distribution only when approved. Derive behaviors from the inspected application routes. For an S3 origin, use Origin Access Control and a distribution-scoped bucket policy; never make the bucket public. For an ALB origin, use HTTPS and ensure API, authenticated, WebSocket, and mutation routes are not cached. For custom aliases, use an ACM certificate in `us-east-1`, validate it through the approved Route53 zone, then create approved `A` and `AAAA` aliases to the distribution. Report the distribution ID, domain, origin, aliases, cache policies, and certificate ARN.
 5. AWS service access: extend the project IRSA role only with approved actions and resource ARNs.
+
+### Private secret-draft JSON
+
+1. Generate the draft only after the approved infrastructure exists and its facts are known. Never write SOPS values automatically.
+2. Build `required-keys.json` from the inspected repository's exact environment-key names. Build `infra-values.json` only from approved created-resource facts and approved generated credentials, such as the in-cluster database URL/password, Redis URL, S3 bucket/region, CloudFront distribution domain, or approved service role data.
+3. Run `scripts/render-secret-draft.py --required-keys <required-keys.json> --infra-values <infra-values.json> --output <private-path>`.
+4. The output is a flat JSON object containing every required repository key. It fills only exact keys with known infrastructure values and uses `__USER_INPUT_REQUIRED__` for all remaining values.
+5. Write the file outside any Git working tree with mode `0600`. Do not log, attach, commit, upload, place in the PR, or show its values in chat. Report only the private path, derived-key names, and unresolved-key names.
+6. Stop for the user to review the draft, replace placeholders, and update the SOPS manifests themselves. Resume GitOps validation and PR creation only after the user confirms that their SOPS work is complete.
 
 ### GitOps pull request
 
