@@ -1,6 +1,6 @@
 ---
 name: staging-aws-infra
-description: Plan and provision AWS-backed Kubernetes infrastructure for a new project in Newton School staging only. Use when Codex needs to create or review staging ECR, CodeBuild, shared-ALB routing, Route53, optional S3/IRSA, and a Kubernetes-cluster-infra pull request. Always run a read-only plan first and wait for explicit user confirmation before any write.
+description: Plan and provision AWS-backed Kubernetes infrastructure for a new GitHub project in Newton School staging only. Use when Codex needs to inspect a repository and create or review staging ECR, CodeBuild, shared-ALB routing, Route53, optional S3/IRSA/CloudFront, and a Kubernetes-cluster-infra pull request. Always run a read-only plan first and wait for explicit user confirmation before any write.
 ---
 
 # Staging AWS Infra
@@ -21,7 +21,7 @@ Create new-project infrastructure in two strictly separated phases. This skill i
 - Reject a production request outright, even if AWS credentials happen to be staging credentials. Do not offer a production fallback.
 - Require `AWS_PROFILE=staging`; never set, export, or override it for the user.
 - Run `aws sts get-caller-identity` without `--profile` and require account `552623333554`.
-- Require `ap-south-1`. Fail rather than choose another region.
+- Require `ap-south-1` for all regional staging resources. The only exception is an approved CloudFront custom-domain certificate in `us-east-1`; CloudFront itself is global and must remain in the staging account.
 - Use AWS CLI for all AWS discovery and writes. Do not use a console/browser route for AWS operations.
 - Work only in the Kubernetes infra repository supplied by the user. Read its `AGENTS.md` and local runbooks before applying.
 - Create a new branch from current `origin/main` only when the user has explicitly confirmed the apply plan. Never push to `main`, merge the PR, or edit `prod/`.
@@ -31,33 +31,43 @@ Create new-project infrastructure in two strictly separated phases. This skill i
 
 ## Inputs to resolve in plan mode
 
-Require or explicitly mark as unresolved:
+Require these inputs. Do not select a project name, GitHub repository, topology, or resource option by guesswork:
 
-1. Project slug and GitHub repository.
+1. Project slug and accessible canonical GitHub repository (`OWNER/REPOSITORY`).
 2. Public hostnames and optional path routes.
 3. Workload topology: frontend, API, WebSocket API, workers, migration job, scheduled jobs, and ports/health endpoints.
 4. Initial immutable image tag(s), image build instructions, and source SHA.
 5. Resource requests/limits, replicas, and stateful node-placement needs.
-6. Dependencies: PostgreSQL, Redis, S3, and AWS integrations such as SES.
+6. Dependencies: PostgreSQL, Redis, S3, CloudFront, and AWS integrations such as SES.
 7. Required secret-key names and the approved source of each value.
 
 Use a lower-case DNS-safe slug. Check ECR repository names, target-group names, bucket names, IAM-role names, listener-rule priorities, hostnames, and Kubernetes namespaces for collisions before proposing writes.
 
+If the user did not explicitly choose an optional resource, ask whether to include it. At minimum ask about PostgreSQL, Redis, S3, CloudFront, and AWS integrations such as SES. Include the repository evidence that makes an option relevant, but do not silently enable it.
+
 ## Plan mode
 
-1. Run `scripts/preflight-plan.sh --project <slug> --infra-repo <path>`.
+1. Normalize the GitHub repository to `OWNER/REPOSITORY`, verify that it is accessible, then run `scripts/preflight-plan.sh --project <slug> --github-repo <OWNER/REPOSITORY> --infra-repo <path>`.
 2. Discover, rather than hard-code, the staging EKS cluster, VPC, shared ALB, HTTPS listener, Route53 hosted zone, existing listener rules, existing project resources, and cluster capabilities.
 3. Read `references/staging-patterns.md` and the current repository runbooks. Use a recent project only as a pattern, not as a copy source for secrets, names, ARNs, or image tags.
-4. Inspect the application repository for Docker/build configuration, health endpoints, ports, migration requirements, and required environment-key names. Do not alter the app repository in this phase.
-5. Produce a plan containing:
+4. Inspect the GitHub repository's default branch before designing anything. Use the repository as the source of truth; do not infer architecture from its name. Inspect Dockerfiles, buildspec/CI files, package or language manifests, application entrypoints, `.env.example` files, compose/deployment files, health handlers, routes, database/Redis/S3/AWS SDK clients, and frontend static-asset configuration. Do not alter the app repository in this phase.
+5. Derive the proposed image topology, ports, probes, build process, background/migration workloads, public routes, and candidate dependencies from that inspection. If the evidence is incomplete or conflicting, mark the plan blocked and ask for the missing decision.
+6. Ask about every optional resource the user has not selected:
+   - PostgreSQL: none or in-cluster, including storage capacity and migration ownership;
+   - Redis: none or in-cluster, including persistence and authentication;
+   - S3: none or private bucket, including prefixes, lifecycle, and CORS needs;
+   - CloudFront: none or distribution, including origin, aliases, cache behavior, and certificate path;
+   - AWS integrations: none or the exact services/actions required.
+7. Do not continue to the final plan until the project slug, GitHub repository, and every optional-resource choice are explicit.
+8. Produce a plan containing:
    - AWS creates, updates, or collisions;
    - target group health checks and ALB host/path rules;
    - DNS records;
-   - optional database, Redis, S3, IRSA, and IAM choices;
+   - optional database, Redis, S3, CloudFront, IRSA, and IAM choices;
    - Kubernetes manifests and image pins;
    - secret-key names only, with unresolved values called out;
    - validation commands and rollback steps.
-6. Explicitly state that no write has occurred and ask for confirmation of that exact plan.
+9. Explicitly state that no write has occurred and ask for confirmation of that exact plan.
 
 ## Apply mode
 
@@ -76,7 +86,8 @@ Execute only the approved plan and preserve the requested scope.
 1. PostgreSQL: use the existing staging in-cluster StatefulSet/Flux Helm pattern with `ebs-csi-gp3` persistent storage unless the approved plan explicitly selects another supported design. Add only SOPS-encrypted credential references.
 2. Redis: use the existing in-cluster standalone Redis pattern. Make authentication and persistence explicit; schedule stateful workloads on the appropriate existing node group.
 3. S3: create a private encrypted bucket with block-public-access and scoped lifecycle/CORS settings. Prefer a project ServiceAccount plus IRSA and least-privilege bucket/prefix policy; do not use static AWS credentials in application secrets.
-4. AWS service access: extend the project IRSA role only with approved actions and resource ARNs.
+4. CloudFront: create a distribution only when approved. Derive behaviors from the inspected application routes. For an S3 origin, use Origin Access Control and a distribution-scoped bucket policy; never make the bucket public. For an ALB origin, use HTTPS and ensure API, authenticated, WebSocket, and mutation routes are not cached. For custom aliases, use an ACM certificate in `us-east-1`, validate it through the approved Route53 zone, then create approved `A` and `AAAA` aliases to the distribution. Report the distribution ID, domain, origin, aliases, cache policies, and certificate ARN.
+5. AWS service access: extend the project IRSA role only with approved actions and resource ARNs.
 
 ### GitOps pull request
 

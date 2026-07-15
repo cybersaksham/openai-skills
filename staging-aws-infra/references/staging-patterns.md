@@ -27,6 +27,13 @@ Use these as current staging patterns. Discover all live identifiers during each
 - Prefer IRSA: create a narrowly scoped IAM role and policy, then annotate a project ServiceAccount with that role ARN. This supplies short-lived credentials to pods.
 - Never place static AWS access keys in a Kubernetes Secret.
 
+## CloudFront
+
+- Treat CloudFront as optional. Decide from repository evidence whether it serves a static frontend/S3 origin or fronts a public application; never enable it from the project name alone.
+- Use Origin Access Control and a distribution-scoped bucket policy for an S3 origin. Keep the bucket private.
+- Derive cache behaviors from the application routes. Do not cache authenticated, API, WebSocket, or mutation endpoints by default.
+- CloudFront is global. Custom aliases require an ACM certificate in `us-east-1`, even though all normal staging resources remain in `ap-south-1`. Validate the certificate through the approved staging Route53 zone and create `A` and `AAAA` aliases only after approval.
+
 ## Secrets
 
 - SOPS-encrypted `secrets.yaml` values are a human-approved operation. Do not decrypt, print, invent, or commit plaintext values.

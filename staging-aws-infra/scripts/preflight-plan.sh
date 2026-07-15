@@ -6,15 +6,16 @@ set -euo pipefail
 EXPECTED_ACCOUNT="552623333554"
 EXPECTED_REGION="ap-south-1"
 PROJECT=""
+GITHUB_REPO=""
 INFRA_REPO=""
 ENVIRONMENT="staging"
 
 usage() {
   cat <<'EOF'
-Usage: preflight-plan.sh --project <dns-safe-slug> --infra-repo <path> [--environment staging]
+Usage: preflight-plan.sh --project <dns-safe-slug> --github-repo <owner/repository> --infra-repo <path> [--environment staging]
 
-Perform read-only staging identity, collision, and repository checks. The script
-refuses any environment other than staging and never changes AWS or Git state.
+Perform read-only staging identity, collision, and GitHub repository checks. The
+script refuses any environment other than staging and never changes AWS or Git state.
 EOF
 }
 
@@ -26,6 +27,7 @@ fail() {
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --project) PROJECT="${2:-}"; shift 2 ;;
+    --github-repo) GITHUB_REPO="${2:-}"; shift 2 ;;
     --infra-repo) INFRA_REPO="${2:-}"; shift 2 ;;
     --environment) ENVIRONMENT="${2:-}"; shift 2 ;;
     --help|-h) usage; exit 0 ;;
@@ -35,8 +37,10 @@ done
 
 [ "$ENVIRONMENT" = "staging" ] || fail "this skill supports staging only"
 [ -n "$PROJECT" ] || fail "--project is required"
+[ -n "$GITHUB_REPO" ] || fail "--github-repo is required"
 [ -n "$INFRA_REPO" ] || fail "--infra-repo is required"
 printf '%s' "$PROJECT" | grep -Eq '^[a-z][a-z0-9-]{1,47}$' || fail "project must be a lower-case DNS-safe slug"
+printf '%s' "$GITHUB_REPO" | grep -Eq '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$' || fail "github repo must be OWNER/REPOSITORY"
 [ "${AWS_PROFILE:-}" = "staging" ] || fail "AWS_PROFILE must be exactly staging; it will not be changed automatically"
 [ -d "$INFRA_REPO/.git" ] || fail "infra repo is not a Git checkout: $INFRA_REPO"
 
@@ -52,6 +56,12 @@ echo "  aws_profile: $AWS_PROFILE"
 echo "  account: $ACCOUNT"
 echo "  region: $REGION"
 echo "  project: $PROJECT"
+echo "  github_repo: $GITHUB_REPO"
+
+command -v gh >/dev/null 2>&1 || fail "GitHub CLI is required to verify the application repository"
+GITHUB_METADATA="$(gh repo view "$GITHUB_REPO" --json nameWithOwner,url,defaultBranchRef,isPrivate)" \
+  || fail "cannot access GitHub repository $GITHUB_REPO"
+echo "  github_metadata: $GITHUB_METADATA"
 
 echo
 echo "Existing AWS resources (read-only)"
