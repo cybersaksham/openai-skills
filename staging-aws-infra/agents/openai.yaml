@@ -1,0 +1,4 @@
+interface:
+  display_name: "Staging AWS Infra"
+  short_description: "Plan and provision staging infrastructure safely"
+  default_prompt: "Use $staging-aws-infra to plan staging infrastructure for my new project."
