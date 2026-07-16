@@ -10,7 +10,7 @@ Create new-project infrastructure in two strictly separated phases. This skill i
 ## Mandatory phase gate
 
 1. Start every request in `plan` mode, including requests that say “create”, “apply”, or “deploy”.
-2. In plan mode, use only read-only commands. Run `scripts/preflight-plan.sh` before discovery.
+2. In plan mode, use only read-only commands. Run `scripts/preflight-plan.sh`, then complete the repository analysis gate before AWS resource discovery or planning.
 3. Present the resource plan, exact assumptions, unresolved inputs, collision results, and the GitOps files that would change.
 4. Stop and ask for explicit confirmation using the generated plan. Do not treat “looks good”, “continue”, or silence as confirmation.
 5. Enter `apply` mode only after the user expressly confirms the named staging plan, for example: `Apply the staging plan for <project>.`
@@ -47,14 +47,29 @@ If the user did not explicitly choose an optional resource, ask whether to inclu
 
 Derive required environment-key names from the GitHub repository. Do not copy keys from another project or add generic keys. For every discovered key, classify its planned value source as one of: `infra-derived`, `generated-for-approved-infra`, or `user-required`.
 
+## Repository analysis gate
+
+Complete this gate immediately after the safety preflight and before discovering or proposing project AWS resources. The repository, not the project name, is the source of truth.
+
+1. Inspect the GitHub repository's default branch and identify its services, build tooling, runtime entrypoints, container boundaries, HTTP/WebSocket ports, health endpoints, background jobs, migration behavior, static assets, and public routes.
+2. Inspect Dockerfiles, buildspec/CI files, package or language manifests, application configuration, `.env.example` files, compose/deployment files, source imports, and AWS/database/Redis/S3/CloudFront clients.
+3. Produce a repository resource assessment with each resource marked `required`, `evidence suggests`, `no evidence`, or `undetermined`:
+   - ECR/CodeBuild and the image topology;
+   - public ALB, DNS, and TargetGroupBindings;
+   - PostgreSQL, Redis, S3, CloudFront, IRSA, SES, and other AWS services;
+   - Kubernetes workloads, persistent volumes, migrations, workers, and scheduled jobs;
+   - exact environment-key names and their expected source.
+4. Cite the repository path or configuration evidence for every `required` or `evidence suggests` classification. Do not select an optional resource solely from a framework convention.
+5. If the repository lacks enough evidence, mark the classification `undetermined` and ask the user instead of planning a resource.
+
 ## Plan mode
 
 1. Normalize the GitHub repository to `OWNER/REPOSITORY`, verify that it is accessible, then run `scripts/preflight-plan.sh --project <slug> --github-repo <OWNER/REPOSITORY> --infra-repo <path>`.
-2. Discover, rather than hard-code, the staging EKS cluster, VPC, shared ALB, HTTPS listener, Route53 hosted zone, existing listener rules, existing project resources, and cluster capabilities.
-3. Read `references/staging-patterns.md` and the current repository runbooks. Use a recent project only as a pattern, not as a copy source for secrets, names, ARNs, or image tags.
-4. Inspect the GitHub repository's default branch before designing anything. Use the repository as the source of truth; do not infer architecture from its name. Inspect Dockerfiles, buildspec/CI files, package or language manifests, application entrypoints, `.env.example` files, compose/deployment files, health handlers, routes, database/Redis/S3/AWS SDK clients, and frontend static-asset configuration. Do not alter the app repository in this phase.
-5. Derive the proposed image topology, ports, probes, build process, background/migration workloads, public routes, and candidate dependencies from that inspection. If the evidence is incomplete or conflicting, mark the plan blocked and ask for the missing decision.
-6. Ask about every optional resource the user has not selected:
+2. Complete the repository analysis gate and present its evidence-backed resource assessment. Do not propose resource creation before this assessment is complete.
+3. Read `references/staging-patterns.md` and the current infrastructure-repository runbooks. Use existing projects only as implementation patterns, never as a source for names, ARNs, image tags, or secrets.
+4. Discover, rather than hard-code, the staging EKS cluster, VPC, shared ALB, HTTPS listener, Route53 hosted zone, existing listener rules, existing project resources, and cluster capabilities needed by the resource assessment.
+5. Derive the proposed image topology, ports, probes, build process, background/migration workloads, public routes, and candidate dependencies from the repository analysis. If the evidence is incomplete or conflicting, mark the plan blocked and ask for the missing decision.
+6. Ask about every optional resource the user has not selected or that the analysis classifies as `undetermined`:
    - PostgreSQL: none or in-cluster, including storage capacity and migration ownership;
    - Redis: none or in-cluster, including persistence and authentication;
    - S3: none or private bucket, including prefixes, lifecycle, and CORS needs;

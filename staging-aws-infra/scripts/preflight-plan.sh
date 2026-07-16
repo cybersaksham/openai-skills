@@ -14,8 +14,9 @@ usage() {
   cat <<'EOF'
 Usage: preflight-plan.sh --project <dns-safe-slug> --github-repo <owner/repository> --infra-repo <path> [--environment staging]
 
-Perform read-only staging identity, collision, and GitHub repository checks. The
-script refuses any environment other than staging and never changes AWS or Git state.
+Perform read-only staging identity, GitHub repository, and local infra-repository
+checks. Resource discovery happens only after repository analysis. The script
+refuses any environment other than staging and never changes AWS or Git state.
 EOF
 }
 
@@ -62,23 +63,6 @@ command -v gh >/dev/null 2>&1 || fail "GitHub CLI is required to verify the appl
 GITHUB_METADATA="$(gh repo view "$GITHUB_REPO" --json nameWithOwner,url,defaultBranchRef,isPrivate)" \
   || fail "cannot access GitHub repository $GITHUB_REPO"
 echo "  github_metadata: $GITHUB_METADATA"
-
-echo
-echo "Existing AWS resources (read-only)"
-aws ecr describe-repositories --repository-names "$PROJECT" --region "$REGION" \
-  --query 'repositories[*].{name:repositoryName,uri:repositoryUri}' --output table 2>/dev/null \
-  || echo "  ECR repository: not found"
-aws codebuild batch-get-projects --names "$PROJECT" --region "$REGION" \
-  --query 'projects[*].{name:name,source:source.location,webhook:webhook.status}' --output table 2>/dev/null \
-  || echo "  CodeBuild project: not found"
-TARGET_GROUPS="$(aws elbv2 describe-target-groups --region "$REGION" \
-  --query "TargetGroups[?starts_with(TargetGroupName, \`$PROJECT\`)].{name:TargetGroupName,arn:TargetGroupArn}" \
-  --output table)"
-if [ -n "$TARGET_GROUPS" ]; then
-  printf '%s\n' "$TARGET_GROUPS"
-else
-  echo "  Project-prefixed target groups: not found"
-fi
 
 echo
 echo "Infra repository state (read-only)"
