@@ -1,0 +1,50 @@
+# __PRODUCT_NAME__ root agent harness
+
+This root harness applies to the repository, including `__BACKEND_PATH__/`, `__CLIENT_PATH__/`, `.specs/`, tests, scripts, and `__DEPLOYMENT_PATH__/`. Do not add nested `AGENTS.md` files unless the repository intentionally requires scoped harnesses.
+
+## Required reading order
+
+Before planning or changing product behavior:
+
+1. Read this file completely.
+2. Read every Markdown file under `.agents/rules/` in lexical order when that directory exists.
+3. Read every applicable repository skill completely.
+4. Read the smallest complete set of relevant generated `.specs/*.html#anchor` clauses.
+5. Inspect current code, schemas, migrations, generated artifacts, tests, configuration, infrastructure, and repository state.
+
+Do not begin from assumptions or treat current code behavior as intended when `.specs/` defines the contract.
+
+## Repository skills
+
+- `.agents/skills/maintain-specifications/SKILL.md` — use automatically for every specification task and whenever planning or implementation discovers or changes a product, data, interface, event/job, permission, provider, runtime, migration, client, security, acceptance, or documentation contract.
+- `.agents/skills/create-feature-plan/SKILL.md` — use for feature/change planning and before non-trivial behavior-affecting implementation.
+- `.agents/skills/implement-feature/SKILL.md` — use for end-to-end feature implementation; it must use the planning skill and the specification skill.
+
+## Product and architecture authority
+
+- `.specs/` is the sole authority for intended product behavior and system design. Code and tests show implementation state but do not override it.
+- Cite exact generated `.specs/*.html#anchor` clauses in plans and conformance evidence.
+- Edit specification source modules and regenerate HTML. Never hand-edit generated pages.
+- If required behavior or architecture is missing, contradictory, or changed, stop dependent work and follow `maintain-specifications`: explain impact, ask the focused owner question, update specs first, regenerate, validate, rate, then plan or implement.
+- Recheck every consumer when shared data, interface, event/job, permission, runtime, provider, migration, client, or security contracts change.
+
+## Working state
+
+- Keep implementation plans under ignored `.plans/`; plans are execution state, not requirements.
+- Work on the current branch unless the user explicitly requests another branch/worktree.
+- Preserve unrelated changes and stage only owned files.
+- Commit small, coherent, verified checkpoints when commits are in scope.
+- Do not push, open pull requests, rewrite history, or run destructive Git commands without explicit authorization.
+
+## Engineering baseline
+
+- Treat the product as production-grade. Enforce authorization and scope at trusted boundaries for reads, commands, jobs, exports, notifications, and private assets.
+- Keep domain decisions in their specified owner; UI visibility is not authorization and transport code is not domain truth.
+- Validate untrusted input and provider callbacks, keep secrets and sensitive data out of clients/logs/fixtures/commits, and use safe stable errors.
+- Preserve specified history, versioning, audit, concurrency, idempotency, retries, compatibility, rollback, and recovery.
+- Regenerate generated artifacts from source and run meaningful success, denial, failure, retry, concurrency, recovery, accessibility, security, and regression checks.
+- Do not claim software is bug-free; report concrete checks, risks, and true blockers.
+
+## Definition of complete
+
+A feature or plan is complete only when its skill workflow finishes, every applicable test and generation gate passes, migrations/generated artifacts are current, affected specifications and consumers are reconciled, every conformance row is resolved, and no accidental or sensitive file remains.
