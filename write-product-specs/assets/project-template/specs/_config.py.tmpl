@@ -1,19 +1,33 @@
-"""Project identity and documentation-wide ordering."""
+"""Project identity and frozen documentation-shell configuration."""
 
 PRODUCT_NAME = __PRODUCT_NAME_REPR__
 PRODUCT_TAGLINE = __PRODUCT_TAGLINE_REPR__
 SPEC_STATUS = "draft"  # Change to "final" only after all decisions and quality gates close.
 SCAFFOLD_CONTENT_REPLACED = False  # Set True only after every starter page is project-specific.
-ASSET_VERSION = "1"
+SPEC_VERSION = "v0"
+GENERATED_LABEL = "Draft scaffold"
+ASSET_VERSION = "stride-shell-1"
 
 NAV_GROUP_ORDER = [
-    "Start",
+    "Start here",
     "Product journeys",
-    "Features",
-    "Architecture flows",
-    "Runtime modules",
-    "Client runtime",
-    "Data and interfaces",
-    "Operations and assurance",
-    "Reference",
+    "Product guides",
+    "Architecture",
+    "Project reference",
 ]
+
+NAV_SUBGROUP_ORDER = {
+    "Architecture": [
+        "System foundations",
+        "Repository and deployment",
+        "Backend implementation handbook",
+        "Platform system designs",
+        "Frontend implementation",
+        "Assurance",
+    ],
+    "Project reference": [
+        "Data and interfaces",
+        "Operations and assurance",
+        "Traceability",
+    ],
+}

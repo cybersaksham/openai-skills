@@ -92,6 +92,7 @@ def main() -> int:
     validation_metrics = validation_payload.get("metrics", {})
     completion_gate_passed = (
         not errors
+        and not args.allow_draft
         and validation_payload.get("spec_status") == "final"
         and validation_metrics.get("pending_decisions", 0) == 0
         and validation_metrics.get("pending_requirements", 0) == 0

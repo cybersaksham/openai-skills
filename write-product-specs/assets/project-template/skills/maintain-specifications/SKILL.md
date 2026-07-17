@@ -5,7 +5,7 @@ description: Create, update, restructure, reconcile, audit, rate, or validate th
 
 # Maintain Specifications
 
-Maintain `.specs/` as the repository's professional product documentation site and sole intended product/system-design authority. Make every affected journey and runtime flow understandable without reading code, while fixing enough exact contracts for implementation without invention.
+Maintain `.specs/` as the repository's professional product documentation site and sole intended product/system-design authority. Preserve the bundled Stride documentation format exactly, with its one approved top-right theme switcher. Make every affected journey and runtime flow understandable without reading code, while fixing enough exact contracts for implementation without invention.
 
 ## Read first
 
@@ -37,8 +37,10 @@ Follow a flow through all data, interface, async/provider, client, security, ope
 
 ## Enforce documentation architecture
 
-- Preserve the official shell: complete sidebar, focused article, breadcrumbs, on-page contents, related links, previous/next navigation, responsive drawer, theme, focus, and print support.
+- Preserve the frozen Stride shell and asset hashes: branded/versioned sidebar, `Start here`, `Product journeys`, `Product guides`, `Architecture`, and `Project reference` hierarchy, focused article, breadcrumbs, right contents/related/status rail, previous/next cards, footer, responsive drawer, copyable code, focus, and print support.
+- Keep exactly one theme switcher in the top-right bar. Do not move or duplicate it in the sidebar.
 - Keep navigation entirely in the sidebar. Do not add subtabs or filter/search inputs.
+- Do not introduce another documentation framework, product-specific layout/theme, or page-local visual system.
 - Give each independent product journey, runtime sequence, provider callback, upload/file flow, notification flow, migration/deployment flow, and recovery loop a concrete discoverable page.
 - Keep overview pages as maps; focused pages own executable detail.
 - Keep schemas in code blocks, not model-field tables.
@@ -46,11 +48,14 @@ Follow a flow through all data, interface, async/provider, client, security, ope
 
 ## Make runtime modules understandable without code
 
-- Give every natural backend/runtime boundary—app, service, module, package, bounded context, worker, or equivalent—one developer handbook page.
+- Populate and reconcile `.specs/_inventory.py` from repository/architecture discovery before changing the page tree. Configure discovery roots against the actual app/package/service graph; every automatically discovered source unit must map one-to-one to one runtime inventory `source_unit` and focused handbook, while exclusions require concrete non-runtime reasons. Never use an unpaired `root` discovery entry to hide source-bearing child packages.
+- Document settings/configuration first, shared/common foundations second, and every natural backend/runtime boundary—app, service, module, package, bounded context, worker, or equivalent—in its own developer handbook page.
+- Never collapse separate discovered packages into one aggregate page merely to reduce page count. Use `settings`, `common`, and `implementation` roles, keep the first two owners first, and do not bypass one-to-one discovery by choosing an artificially broad root.
 - Put a chronological developer code-flow directory before schemas and component catalogs.
 - Cover every material state-changing command, scoped read, event/message consumer, schedule, provider call/callback, and reconciliation path.
-- Each flow names trigger/authority; exact entry point and symbols; records read/locked/created/updated; transaction/consistency/commit; audit/outbox; after-commit event/job/provider/downstream consumer; terminal response/state; duplicates/concurrency/denials/retries/failures/operator recovery.
+- Each flow names trigger/initiator/authority and an exact entry point. Every chronological step names exact files/modules/symbols, records read, records written or a no-write reason, and behavior. The flow also closes transaction/consistency/commit, audit/outbox, after-commit event/job/provider/downstream consumer, terminal response/state, duplicates/concurrency, denials, failures, observability, retry, and operator recovery.
 - Follow asynchronous and cross-module work to the terminal product outcome. Catalogs do not substitute for chronology.
+- Keep each runtime inventory entry's `entry_flows` exactly equal to the developer code-flow ids rendered on its page.
 
 ## Close connected contracts
 
@@ -72,7 +77,7 @@ For every affected flow define or justify as not applicable:
 1. Record Git/worktree baseline and normative counts.
 2. Trace the complete impact surface and assign one source owner per fact.
 3. Edit source and navigation together; preserve/update anchors and inbound links.
-4. Add validator/conformance checks for every contract that must not regress.
+4. Add validator/conformance checks for every contract that must not regress. Preserve canonical asset hashes and shell landmark tests.
 5. Run:
 
 ```bash
@@ -93,4 +98,4 @@ For a complete rough cut blocked only by explicit owner decisions, run the comma
 
 ## Definition of complete
 
-Complete only when sources and generated pages agree; navigation/anchors are discoverable; all applicable contract dimensions are explicit; module developer flows are chronological and terminal; schemas are exact/sealed; requirements/decisions/scenarios are traceable; connected consumers agree; deterministic generation, validation, conformance, links, and visual checks pass; semantic scores are honest; and only intentional safe changes remain.
+Complete only when sources and generated pages agree; canonical Stride shell/assets and top-right-only theme placement pass; no starter page remains; repository-backed discovery proves one focused owner for every included runtime source unit; settings/common roles or exact not-applicable reasons are explicit; all journey/feature/architecture/module/client inventories are complete and reciprocal; navigation/anchors are discoverable; all applicable contract dimensions are explicit; module developer flows expose exact per-step symbols/reads/writes/behavior through terminal recovery; schemas are exact/sealed; requirements/decisions/scenarios are traceable; connected consumers agree; deterministic generation, validation, conformance, links, and visual checks pass; semantic scores are honest; and only intentional safe changes remain.

@@ -1,11 +1,11 @@
 ---
 name: write-product-specs
-description: Create, reconstruct, expand, reconcile, or audit a complete implementation-ready product specification system and repository agent workflow. Use when Codex must turn a product prompt, PRD, notes, discussions, designs, or an existing codebase into a professional generated `.specs/` documentation site; install or update the repository-local `.agents/skills/maintain-specifications`, `create-feature-plan`, and `implement-feature` pipeline; add the minimum specification authority routing to `AGENTS.md` without replacing an existing agent harness; and expose that same harness to Claude through exact compatibility symlinks. Supports any product, language, framework, datastore, client, integration, deployment model, or repository layout.
+description: Create, reconstruct, expand, reconcile, or audit a complete implementation-ready product specification system and repository agent workflow using the fixed Stride-quality documentation format. Use when Codex must turn a product prompt, PRD, notes, discussions, designs, or an existing codebase into a professional generated `.specs/` site with Stride-parity sidebar, page anatomy, focused product/system flows, implementation-unit handbooks, exact contracts, and evaluation gates; install or update the repository-local `.agents/skills/maintain-specifications`, `create-feature-plan`, and `implement-feature` pipeline; add minimum authority routing to `AGENTS.md`; and expose the same harness to Claude through exact compatibility symlinks. Supports any product, stack, datastore, client, integration, deployment model, or repository layout without relaxing the fixed documentation architecture.
 ---
 
 # Write Product Specs
 
-Build a specification system that a human can use to understand the complete product and that an implementation agent can use as its only product and system-design authority. Produce decisions, not decorative prose. Do not modify product code unless the user separately requests implementation after the specification workflow is complete.
+Build a specification system that a human can use to understand the complete product and that an implementation agent can use as its only product and system-design authority. Use the bundled Stride-parity site as a fixed output contract, not as optional inspiration. Adapt product facts and technology vocabulary; do not redesign the documentation shell or weaken its documenting behavior. Produce decisions, not decorative prose. Do not modify product code unless the user separately requests implementation after the specification workflow is complete.
 
 ## Load the applicable resources
 
@@ -26,10 +26,10 @@ Complete runs must leave the target repository with:
 
 ```text
 .specs/
-  source-only specification modules
+  source-only focused page modules and coverage inventories
   deterministic generator and validator
-  generated static HTML documentation
-  local CSS, JavaScript, and vector assets
+  generated static HTML in the canonical Stride documentation shell
+  frozen local CSS and JavaScript assets with a top-right theme switcher
 .agents/skills/
   maintain-specifications/
   create-feature-plan/
@@ -44,6 +44,8 @@ Use `.agents/skills/` as the canonical path. If the repository already uses anot
 The two relative symlinks above are the complete Claude compatibility layer. Do not create separate Claude instructions, settings, commands, hooks, skill copies, or any other Claude-specific content. If either path already exists but is not the exact expected symlink, stop and ask the owner to reconcile it; never overwrite or merge that path automatically.
 
 The final `.specs/` must contain no scaffold placeholders or unresolved decisions. If owner input is unavailable, create the complete determinable rough cut, represent each true blocker as a named pending decision, run all possible checks, and report that completion is blocked. Never invent the missing choice to obtain a passing score.
+
+The visual and navigation format is not project-selectable. Preserve the bundled Stride shell: product mark and version in the fixed sidebar, `Start here`, `Product journeys`, `Product guides`, `Architecture`, and `Project reference` hierarchy, focused article, breadcrumbs, right contents/related/status rail, previous/next cards, footer, responsive drawer, copyable code, and print rules. Keep the one approved improvement: the theme switcher lives in the top-right bar. Do not create a second theme control in the sidebar.
 
 ## Choose the operating mode
 
@@ -60,6 +62,7 @@ The final `.specs/` must contain no scaffold placeholders or unresolved decision
 - Record the current branch, commit, working-tree state, repository layout, and existing harness/specification files.
 - Preserve unrelated changes. Do not switch branches, rewrite history, or replace a harness.
 - Identify the actual backend, frontend/client, shared libraries, infrastructure/deployment, schemas, generated artifacts, and test locations. Treat `backend/`, `frontend/`, and deployment configuration as discovery defaults only.
+- Build a complete source-backed inventory of product journeys, features, independently triggered architecture flows, natural backend/runtime implementation units, and client surfaces before deciding the page tree. Configure repository-backed runtime discovery roots so the validator enumerates actual source units, then map every included unit one-to-one to a focused handbook with exact owned paths and entry flows.
 - Record which inputs are owner intent, historical context, implementation evidence, or proposals.
 
 ### 2. Build the product knowledge registers
@@ -96,17 +99,19 @@ python3 <skill-path>/scripts/init_product_specs.py \
   --tagline "<One-sentence product promise>"
 ```
 
-The initializer uses only the Python standard library. It refuses to overwrite `.specs/`, any of the three project skills, `AGENTS.md`, `.claude`, or `CLAUDE.md`. It creates a root harness only when none exists. On an existing harness, it installs only non-conflicting missing assets and writes an additive routing proposal for semantic review. It creates `.claude -> .agents` and `CLAUDE.md -> AGENTS.md` only after their exact relative targets are in place.
+The initializer uses only the Python standard library. It refuses to overwrite `.specs/`, any of the three project skills, `AGENTS.md`, `.claude`, or `CLAUDE.md`. It creates a root harness only when none exists. On an existing harness, it installs only non-conflicting missing assets and writes an additive routing proposal for semantic review. It creates `.claude -> .agents` and `CLAUDE.md -> AGENTS.md` only after their exact relative targets are in place. The generated draft contains the complete canonical documentation hierarchy and page-anatomy examples; these are starter owners to replace, not permission to ship generic prose.
 
 After scaffolding:
 
 - replace every starter source page with project-specific content;
+- populate `.specs/_inventory.py` from verified discovery and keep every focused page in one matching inventory entry;
+- configure `RUNTIME_DISCOVERY_ROOTS` against the repository's real app/package/service roots, give every exclusion a concrete non-runtime reason, and keep every discovered unit in exactly one `RUNTIME_MODULE_INVENTORY[].source_unit`; never use `mode="root"` to hide source-bearing child packages—pair it with `child-directories` for the same path or choose narrower roots;
 - split pages by independently understandable product journey, runtime flow, system boundary, backend module/service, or contract;
 - tailor the generated project-local skills to repository facts and commands while preserving their pipeline and decision gates;
 - merge the minimal routing block into an existing `AGENTS.md` using [Project harness standard](references/project-harness-standard.md);
 - add `.plans/` to the appropriate ignore file without disturbing existing groups.
 
-For an existing `.specs/`, do not run the initializer. Preserve its source/generation model when it satisfies this skill; otherwise propose an additive migration and preserve stable URLs and anchors.
+For an existing `.specs/`, do not run the initializer. Compare its renderer, CSS, JavaScript, navigation DOM, page schema, inventory coverage, and validators with the bundled canonical scaffold. If they differ, migrate the existing sources into the canonical engine while preserving stable URLs and anchors. Do not preserve a weaker or visually different shell merely because it already exists.
 
 ### 5. Write the documentation in reader order
 
@@ -120,7 +125,7 @@ Use the information architecture in [Documentation standard](references/document
 6. Data, API/transport, events/jobs, provider, security, operations, and deployment contracts.
 7. Decisions, requirement coverage, acceptance, conformance, and audit evidence.
 
-Every page title must identify the exact flow or contract it owns. Overview pages route; focused pages decide. Do not solve navigation growth with tabs or a filter input.
+Every page title must identify the exact flow or contract it owns. Overview pages route; focused pages decide. Render all pages through the fixed Stride hierarchy and shell. Do not solve navigation growth with tabs, a filter input, a custom framework, or a project-specific visual redesign.
 
 ### 6. Close every implementation contract
 
@@ -128,8 +133,8 @@ Use [Contract coverage standard](references/contract-coverage.md) clause by clau
 
 - Keep database/domain schemas in code blocks using the project's native type vocabulary or an explicitly resolved schema DSL.
 - Seal all public request, response, event, job, and provider payload schemas; unknown fields and values need explicit behavior.
-- Document each backend module/service/app/package as a developer handbook whose code-flow directory precedes component catalogs.
-- Trace every material entry path chronologically through exact symbols, reads/locks/writes, transaction/commit, audit/outbox, asynchronous or provider handoffs, terminal state, and recovery.
+- Document settings/configuration first, shared/common foundations second, and then one developer handbook for every natural backend module/service/app/package/worker boundary. Give runtime entries role `settings`, `common`, or `implementation`; final validation requires the first two owners or concrete not-applicable reasons. Never combine separate discovered source units only to reduce the page count.
+- Trace every material entry path chronologically. Every step must name exact files/modules/symbols, records read, records written or an explicit no-write reason, behavior, transaction/commit, audit/outbox, asynchronous or provider handoff, terminal state, concurrency, observability, failure, and recovery.
 - Follow cross-module and asynchronous work to the terminal product outcome. “Call service,” “emit event,” or “enqueue job” is not a complete flow.
 - Define stable executable scenarios for success, denial, validation, duplicate, stale, concurrent, retry, partial failure, recovery, security, and accessibility paths that apply.
 - Mark a dimension `not applicable` only with a concrete reason.
@@ -146,7 +151,7 @@ Run the installed project workflow:
 python3 .agents/skills/maintain-specifications/scripts/spec_quality_gate.py --repo .
 ```
 
-The gate must build twice, prove deterministic output, validate source and generated structure, run specification conformance tests, check links and stable identities, reject placeholder/pending contracts for final mode, enforce the sidebar-only documentation shell, and run `git diff --check` when Git is available.
+The gate must build twice, prove deterministic output, validate source and generated structure, run specification conformance tests, check links and stable identities, reject starter/pending contracts for final mode, enforce exact bundled shell-asset hashes and landmarks, verify the top-right-only theme switcher, compare repository-discovered runtime source units one-to-one with module handbook owners, reconcile every inventory entry with its page and developer flow directory, and run `git diff --check` when Git is available.
 
 When material owner decisions prevent finalization, run the same gate with `--allow-draft`. It must report structural/mechanical quality separately from `completion_gate_passed: false`. Never present a draft-mode pass as final specification completion.
 
@@ -158,6 +163,7 @@ Add project-specific validators whenever a correction, invariant, contract cover
 - Compare all normative owners for contradictions and check that every supplied requirement has a rendered destination.
 - Simulate implementation: list every decision an agent would still need to make. Resolve it or record a blocking owner question.
 - Visually inspect representative desktop and narrow-screen pages in the browser permitted by the target repository. Verify navigation, breadcrumbs, contents rail, anchors, tables, code, focus, responsive drawer, theme, and print behavior.
+- Compare the rendered shell with the bundled canonical output. Product-specific colors, layouts, alternate navigation, missing rails, aggregate module pages, or custom document frameworks are defects, not acceptable adaptations.
 - Apply [Evaluation rubric](references/evaluation-rubric.md) honestly. Do not award credit for volume, page count, styling, or current code behavior.
 
 ### 9. Install and verify the repository pipeline
@@ -198,7 +204,9 @@ Finish only when:
 - humans can understand every product journey and system flow without opening code;
 - agents can implement all in-scope behavior without inventing a product or architecture choice;
 - backend/runtime module pages contain chronological developer code flows, not disconnected catalogs;
+- repository-backed discovery covers every natural implementation unit and every declared entry flow exactly once; each discovered source unit has one focused handbook owner and no unrelated modules are hidden inside aggregate pages;
 - data schemas are code-formatted and transport/event/provider contracts are sealed;
+- every generated page uses the frozen Stride shell with its theme switcher only in the top-right bar;
 - generated output is deterministic and every applicable mechanical/conformance gate passes;
 - the semantic rubric has no hidden deduction or unresolved assumption for any awarded 10;
 - the three local skills and concise root harness enforce the same specification-first pipeline;

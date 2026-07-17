@@ -5,6 +5,7 @@
 - Use `.agents/skills/implement-feature/SKILL.md` for end-to-end implementation; it must use both other skills.
 - Treat generated `.specs/*.html#anchor` clauses as intended product and system-design authority. Code/tests are implementation evidence and do not silently override the specifications.
 - Edit specification sources and regenerate HTML; never hand-edit generated pages.
+- Preserve the bundled Stride shell and repository-backed `.specs/_inventory.py`: one focused owner per journey, system flow, discovered runtime source unit, client surface, and declared developer entry flow; keep the only theme switcher at the top right.
 - If a required decision is missing, conflicting, or changed, stop dependent work, ask the focused owner question, update/validate/rate specs first, then plan or implement.
 - Keep implementation plans in ignored `.plans/` and cite exact `.specs/*.html#anchor` clauses plus conformance evidence.
 

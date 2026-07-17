@@ -1,4 +1,4 @@
 interface:
   display_name: "Write Product Specs"
-  short_description: "Build implementation-ready product specifications"
-  default_prompt: "Use $write-product-specs to create a complete specification system and repository agent workflow for this project."
+  short_description: "Build Stride-format implementation-ready specifications"
+  default_prompt: "Use $write-product-specs to create a complete Stride-format specification system and repository agent workflow for this project."

@@ -2,11 +2,14 @@
 
 PAGE = {
     "route": "architecture/system-map.html",
-    "nav_group": "Architecture flows",
+    "nav_group": "Architecture",
+    "nav_subgroup": "System foundations",
     "nav_order": 0,
+    "nav_label": "System architecture overview",
     "title": "Product runtime boundaries and ownership map",
     "summary": "The discoverable map from actors and clients through trusted runtime boundaries, data stores, asynchronous work, providers, and operations.",
     "kind": "overview",
+    "starter": True,
     "sections": [
         {
             "id": "system-boundaries",

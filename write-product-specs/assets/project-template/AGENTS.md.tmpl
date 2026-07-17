@@ -25,6 +25,7 @@ Do not begin from assumptions or treat current code behavior as intended when `.
 - `.specs/` is the sole authority for intended product behavior and system design. Code and tests show implementation state but do not override it.
 - Cite exact generated `.specs/*.html#anchor` clauses in plans and conformance evidence.
 - Edit specification source modules and regenerate HTML. Never hand-edit generated pages.
+- Preserve the bundled Stride documentation shell and repository-backed `.specs/_inventory.py` coverage. Every automatically discovered runtime source unit and declared entry flow must have one reciprocal focused owner page; the only theme switcher belongs in the top-right bar.
 - If required behavior or architecture is missing, contradictory, or changed, stop dependent work and follow `maintain-specifications`: explain impact, ask the focused owner question, update specs first, regenerate, validate, rate, then plan or implement.
 - Recheck every consumer when shared data, interface, event/job, permission, runtime, provider, migration, client, or security contracts change.
 

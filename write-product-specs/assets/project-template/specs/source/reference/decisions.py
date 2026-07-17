@@ -2,11 +2,14 @@
 
 PAGE = {
     "route": "reference/decisions.html",
-    "nav_group": "Reference",
+    "nav_group": "Project reference",
+    "nav_subgroup": "Traceability",
     "nav_order": 10,
+    "nav_label": "Product and architecture decisions",
     "title": "Confirmed and pending product decisions",
     "summary": "One register for questions, confirmed choices, rationale, consequences, confirmation context, and affected contracts.",
     "kind": "decision-register",
+    "starter": True,
     "sections": [
         {
             "id": "decision-register",

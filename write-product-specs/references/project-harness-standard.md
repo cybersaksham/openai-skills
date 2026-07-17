@@ -33,7 +33,7 @@ CLAUDE.md -> AGENTS.md
     implement-feature/
       SKILL.md
 .plans/                          # ignored local implementation state
-.specs/                          # tracked authority and generated documentation
+.specs/                          # tracked authority, source inventories, and canonical Stride-format documentation
 ```
 
 Use `.agents/skills/` unless an existing repository has one deliberate, authoritative alternative. Never create `.agent/skills/` and `.agents/skills/` as competing copies.
@@ -147,6 +147,7 @@ After installation:
 - confirm all paths referenced by `AGENTS.md` exist;
 - validate every local skill package;
 - run the specification quality gate;
+- verify canonical shell asset hashes/landmarks, top-right-only theme placement, and reciprocal journey/feature/architecture/runtime/client inventories;
 - search for stale old paths or duplicate skill owners;
 - verify `readlink .claude` is exactly `.agents` and `readlink CLAUDE.md` is exactly `AGENTS.md`;
 - verify no separate Claude harness or Claude-only configuration was introduced;

@@ -2,11 +2,13 @@
 
 PAGE = {
     "route": "index.html",
-    "nav_group": "Start",
+    "nav_group": "Start here",
     "nav_order": 0,
+    "nav_label": "Documentation home",
     "title": "__PRODUCT_NAME__ product specifications",
     "summary": "__PRODUCT_TAGLINE__ This generated site will become the sole intended product and system-design authority.",
     "kind": "overview",
+    "starter": True,
     "sections": [
         {
             "id": "authority-and-scope",

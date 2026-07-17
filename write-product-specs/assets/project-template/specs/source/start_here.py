@@ -2,11 +2,13 @@
 
 PAGE = {
     "route": "start-here.html",
-    "nav_group": "Start",
+    "nav_group": "Start here",
     "nav_order": 10,
+    "nav_label": "How to read these specifications",
     "title": "Read and implement from the specifications",
     "summary": "How humans and implementation agents navigate authority, focused flows, exact contracts, and acceptance evidence.",
     "kind": "overview",
+    "starter": True,
     "sections": [
         {
             "id": "reading-order",

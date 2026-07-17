@@ -1,11 +1,12 @@
 # Specification documentation standard
 
-Use this standard for every generated `.specs/` site. Adapt terminology and page inventory to the actual product; preserve the information architecture, flow-first structure, and professional documentation shell.
+Use this standard for every generated `.specs/` site. Adapt terminology, facts, and page inventory to the actual product. Preserve the bundled Stride documentation format exactly. The shell, hierarchy, design tokens, renderer classes, responsive behavior, and documenting patterns are fixed output contracts rather than a style suggestion.
 
 ## Contents
 
 - [Reader outcome](#reader-outcome)
 - [Information architecture](#information-architecture)
+- [Source-backed page inventory](#source-backed-page-inventory)
 - [Navigation and shell](#navigation-and-shell)
 - [Page classes](#page-classes)
 - [Contract expression](#contract-expression)
@@ -42,11 +43,26 @@ Preserve these layers while adapting the actual page names:
 
 Overview and catalog pages summarize and route. Focused pages own executable detail. Link in both directions.
 
+## Source-backed page inventory
+
+Populate `.specs/_inventory.py` before finalizing the page tree:
+
+- `PRODUCT_JOURNEY_INVENTORY` contains every independently understandable actor/system journey.
+- `FEATURE_INVENTORY` contains every product capability and links it to journeys, system flows, runtime owners, and scenarios.
+- `ARCHITECTURE_FLOW_INVENTORY` contains every independently triggered sequence with its own ordering, persistence, provider, failure, or recovery boundary.
+- `RUNTIME_MODULE_INVENTORY` contains settings/common owners and every natural backend application, package, service, bounded context, worker, or equivalent implementation unit, its exact owned paths, public boundary, and complete entry-flow ids.
+- `CLIENT_SURFACE_INVENTORY` contains every client/runtime surface, or one concrete reason that client surfaces are not applicable.
+
+Configure `RUNTIME_DISCOVERY_ROOTS` for the repository's real service/app/package roots. The validator enumerates each root's direct source units by extension. Every included unit must map one-to-one through `RUNTIME_MODULE_INVENTORY[].source_unit` to one focused handbook; every exclusion requires a concrete non-runtime reason. Use `mode="root"` only for direct source files in a genuinely single-unit directory. If that directory also contains source-bearing child packages, configure `child-directories` for the same path so those packages remain separate, or choose narrower roots. The validator rejects an unpaired broad root.
+
+Every focused page must resolve to exactly one inventory entry and every entry to its own unique page route. Two source units may not point at the same handbook. Do not combine unrelated packages or services into a broad runtime page merely because they participate in one product journey. Runtime entries use role `settings`, `common`, or `implementation`; list settings first and common foundations second, or give a concrete not-applicable reason of at least twenty characters that identifies where either absent responsibility lives.
+
 ## Navigation and shell
 
-The generated static HTML site must provide:
+Every generated static HTML site must use the bundled shell and frozen assets. It must provide:
 
-- one persistent left sidebar containing the complete hierarchy;
+- one persistent left sidebar with the root groups `Start here`, `Product journeys`, `Product guides`, `Architecture`, and `Project reference` in that order;
+- the Stride-style brand block, specification version, collapsible group/subgroup/feature hierarchy, nav captions, active state, and sidebar footer;
 - clear active-page state using `aria-current="page"`;
 - collapsible sidebar groups for large documentation sets;
 - a focused article column with readable line length;
@@ -55,9 +71,11 @@ The generated static HTML site must provide:
 - related pages plus previous/next navigation;
 - a responsive navigation drawer on narrow screens;
 - semantic landmarks, keyboard operation, visible focus, and text labels;
-- light/dark theme support using shared local tokens;
+- light/dark theme support using shared local tokens, with exactly one switcher in the top-right bar and no sidebar theme control;
 - print rules that remove chrome and preserve content;
 - local CSS, JavaScript, and vector assets with no external runtime dependency.
+
+Preserve these one-per-page shell landmarks and their bundled class names: `site-shell`, `navigation-scrim`, `sidebar`, `sidebar-header`, `documentation-nav`, `sidebar-footer`, `main`, `topbar`, `topbar-actions`, `documentation-layout`, `content`, `breadcrumbs`, `page-navigation`, `page-rail`, and `footer`. Preserve the canonical CSS and JavaScript byte-for-byte unless this skill itself deliberately versions the format and updates its asset hashes and conformance tests.
 
 Do not add:
 
@@ -65,6 +83,7 @@ Do not add:
 - a filter/search input that hides navigation or page content;
 - page-local navigation competing with the sidebar;
 - framework branding or inconsistent visual shells;
+- product-specific themes, documentation frameworks, layout rewrites, or page-local visual systems;
 - decorative layouts that reduce information density.
 
 When navigation grows, improve page titles, hierarchy, grouping, and progressive disclosure in the sidebar.
@@ -121,7 +140,7 @@ State exactly when external I/O occurs relative to transactions or locks.
 
 Use the system's natural implementation boundary: application, service, module, package, bounded context, function, worker, or equivalent. Do not force Django terminology or a monolith/microservice topology.
 
-Use this order:
+Place a settings/configuration page first, shared/common platform foundations second, and one implementation-unit page per repository-discovered source unit after them. Use this order on every implementation-unit page:
 
 1. Module responsibility, public boundary, dependencies, and owned paths
 2. Developer code-flow directory
@@ -137,14 +156,14 @@ Each developer code flow includes:
 1. Concrete outcome title and stable id
 2. Trigger, initiator, and authority source
 3. Exact transport/event/schedule/public entry point
-4. Ordered file/module and symbol path through validation, policy/query, command/domain, worker, and adapter layers as applicable
-5. Every entity/record/model read, locked, created, updated, or intentionally not written
+4. Ordered steps whose `symbols` field names exact files/modules/functions/classes/handlers through validation, policy/query, command/domain, worker, and adapter layers as applicable
+5. Every step's exact records read and records written, or an explicit reason that the step intentionally performs no read/write
 6. Transaction/consistency boundary, lock/order rule, audit/outbox write, and commit point
 7. Exact event, queue task, provider, or downstream handoff and what its consumer executes
 8. Terminal response, state, and product-visible outcome
 9. Duplicate, stale, concurrent, denial, transient, terminal-failure, and operator-recovery behavior
 
-Follow asynchronous and cross-module paths to the terminal product outcome. “Emit event,” “enqueue job,” “call service,” and “update record” are incomplete without exact owner, contract, mutation, and recovery.
+Follow asynchronous and cross-module paths to the terminal product outcome. “Emit event,” “enqueue job,” “call service,” “invoke provider,” “persist,” and “update record” are incomplete without exact symbols, records, owner, contract, mutation, terminal consumer, and recovery.
 
 ### Frontend/client runtime page
 
@@ -206,12 +225,14 @@ When moving content:
 Inspect representative home, journey, architecture flow, module handbook, schema/reference, and acceptance pages on desktop and narrow viewports.
 
 - Sidebar hierarchy is understandable without opening pages.
+- Shell spacing, typography, colors, cards, tables, code, callouts, rails, and responsive layout match the bundled Stride format.
 - Active page and group are obvious.
 - No filter input or subtabs exist.
 - Breadcrumbs, title, contents rail, related links, and page turns agree.
 - Heading order is semantic and anchor links land correctly.
 - Wide tables scroll without clipping the document.
 - Code, callouts, badges, and tables remain legible in light/dark themes.
+- The only theme switcher is visible and operable at the top right.
 - Focus is visible and controls have accessible names.
 - Mobile navigation opens/closes reliably and does not trap content.
 - Long pages remain scannable without turning every paragraph into a card.

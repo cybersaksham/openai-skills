@@ -44,14 +44,16 @@ Render canonical schemas in code blocks.
 
 ## Runtime ownership and developer flow
 
+Inventory every natural implementation unit from verified repository/architecture discovery before writing handbooks. Configure `RUNTIME_DISCOVERY_ROOTS` so final validation enumerates actual source directories/files, and map each resulting unit one-to-one to `RUNTIME_MODULE_INVENTORY[].source_unit`. Document settings/configuration and shared/common foundations separately, then create one focused page per application, service, package, bounded context, worker, or equivalent code owner. Combining separate discovered units into an aggregate page is a mechanical completeness failure even when that page contains a few representative flows.
+
 For every material entry path define:
 
 - exact interface/event/schedule/CLI/provider callback trigger;
 - authentication/verification and authority construction;
 - input parsing/validation and stable failure mapping;
-- exact module/file and symbol sequence;
+- exact module/file and symbol sequence at every chronological step;
 - query/policy selector and command/domain owner;
-- records read, locked, created, updated, deleted, or intentionally untouched at every durable point;
+- records read and records written at every step, including explicit no-read/no-write reasons where applicable;
 - transaction start/commit/rollback, consistency boundary, lock order, audit/outbox write, and post-commit work;
 - cross-module public seam and dependency direction;
 - event/job/provider/downstream handoff, consumer execution, and terminal outcome;
@@ -59,6 +61,8 @@ For every material entry path define:
 - logs, metrics, traces, alerts, safe attributes, and sensitive-data exclusions.
 
 Catalogs are field/signature lookup aids. They never replace chronological code flows.
+
+Keep `.specs/_inventory.py::RUNTIME_MODULE_INVENTORY[].entry_flows` equal to the complete developer code-flow directory rendered on that unit's page. Keep `source_unit` equal to one included repository-discovered unit and include it in `owned_paths`. A flow present in code discovery but absent from both is a completeness failure; a rendered flow absent from the inventory has no accountable discovery owner.
 
 ## APIs, interfaces, and generated clients
 

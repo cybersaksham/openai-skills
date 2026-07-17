@@ -28,7 +28,7 @@ Round final scores to one decimal. A direct contradiction prevents correctness 1
 | --- | ---: | --- |
 | Product behavior and end-to-end flows | 13 | Every actor, precondition, entry, sequence, alternative, denial, terminal state, recovery, non-goal, and cross-feature effect is explicit. |
 | Domain model and data lifecycle | 12 | Code-format schemas close fields/types, constraints/indexes, relationships, states, history/versioning, deletion, retention, migration, and concurrency. |
-| Backend/runtime architecture and ownership | 11 | Every natural module/service/app/package has chronological developer flows from trigger/authority through exact symbols, data and consistency effects, handoffs, terminal state, errors, and recovery; catalogs close signatures. |
+| Backend/runtime architecture and ownership | 11 | Repository-backed discovery enumerates settings, common foundations, and every natural module/service/app/package/worker; each discovered unit has one focused handbook owner, and each page has chronological flows whose steps name exact symbols, reads, writes, behavior, consistency/commit, handoffs, terminal state, errors, observability, and recovery; catalogs close signatures. |
 | API/interface and generated-client contracts | 10 | Every operation has sealed input/output, statuses/outcomes, errors, headers/metadata, pagination/version/idempotency behavior, and generated-client mapping where applicable. |
 | Authorization, scope, security, and privacy | 10 | Authority, scoped reads, denial, sensitive data/assets, secrets, abuse controls, and audit are consistently defined on every path. |
 | Events, jobs, ordering, and reliability | 8 | Producer, payload/version, dispatch, consumer, ordering, deduplication, retry, dead letter, replay, compatibility, and observability are explicit. |
@@ -36,7 +36,7 @@ Round final scores to one decimal. A direct contradiction prevents correctness 1
 | Bootstrap, migrations, deployment, and operations | 7 | Fresh install, upgrade/backfill, compatibility, rollout/rollback, readiness, backup/restore, RPO/RTO, observability, and operator recovery are executable. |
 | Client nonvisual runtime and accessibility | 7 | Route/surface and state owners, DTO/action authority, interaction states, error/reconnect/stale/schema mismatch, semantics, keyboard/focus, and evidence are closed. |
 | Acceptance, conformance, and testability | 8 | Stable scenarios contain exact authority, fixtures, cases, response/effects/non-effects, time/concurrency/failure controls, cleanup, and reproducible evidence. |
-| Documentation architecture and discoverability | 4 | Sidebar titles expose concrete journeys/system flows; overview/detail ownership, anchors, related links, compatibility, and code-flow directories are complete. |
+| Documentation architecture and discoverability | 4 | Every page uses the frozen Stride shell and hierarchy with the top-right-only theme switcher; sidebar titles expose concrete journeys/system flows; source inventory, overview/detail ownership, anchors, related links, compatibility, and code-flow directories are complete. |
 | Page-level visual design | 3 | Authoritative responsive designs fix layout, content hierarchy, component states, interaction affordances, and accessibility for each product surface. |
 | **Total** | **100** | |
 
@@ -77,8 +77,11 @@ Apply the lowest relevant cap:
 - Stable scenarios use generic actors/pre-states/outcomes or omit response, forbidden effects, time/concurrency, cleanup, layer, or evidence: acceptance category and overall at most **8**.
 - Major cross-system journey exists only as scattered component prose: product/runtime/reliability categories at most **8**.
 - Runtime module contains disconnected model/service/API/event/job catalogs but no chronological developer flows: runtime category and overall at most **8**.
+- Repository-backed runtime discovery is absent/incomplete, a discovered source unit lacks exactly one focused handbook owner, or separate packages/services are collapsed into aggregate handbook pages: mechanical gate fails; runtime and documentation categories and overall at most **7**.
+- A developer code-flow step omits exact symbols, reads, writes/no-write reason, behavior, commit/handoff, terminal failure, observability, or recovery: runtime category and overall at most **8**.
 - Current code or tests are required to discover intended behavior: affected category at most **8**.
 - Contradictory normative owners or lost page/anchor compatibility: documentation and affected categories at most **7**.
+- Canonical shell asset hash/landmark failure, alternate documentation framework, second navigation system, noncanonical theme placement, or missing sidebar/article/rail/page-turn structure: mechanical gate fails and overall at most **7**.
 - Undefined rollout thresholds, observation windows, backup/restore, RPO/RTO, or operator recovery: operations category at most **8**.
 - Page-level design deferred: full-product score remains **deferred**.
 
@@ -86,7 +89,7 @@ Overall 10 is impossible if any category is below 10, any applicable dimension i
 
 ## Evidence procedure
 
-1. Run the project specification quality gate and retain metrics. A rough cut may use `--allow-draft` to prove mechanical structure, but final readiness requires `completion_gate_passed: true` without draft mode.
+1. Run the project specification quality gate and retain metrics, including canonical shell assets, shell failures, starter pages, repository discovery roots, discovered/excluded/owned runtime-unit counts, all source-backed inventories, developer code flows, schemas, operations, scenarios, and pending decisions. A rough cut may use `--allow-draft` to prove mechanical structure, but final readiness requires `completion_gate_passed: true` without draft mode.
 2. Trace representative normal and high-risk flows across product, data, runtime, interface, async/provider, client, security, operations, and acceptance pages.
 3. Inspect every category changed and every shared consumer.
 4. Cite current generated `.specs/*.html#anchor` evidence for every category and every deduction.

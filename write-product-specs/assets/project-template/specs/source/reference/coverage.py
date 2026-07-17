@@ -2,11 +2,14 @@
 
 PAGE = {
     "route": "reference/coverage.html",
-    "nav_group": "Reference",
+    "nav_group": "Project reference",
+    "nav_subgroup": "Traceability",
     "nav_order": 20,
+    "nav_label": "Requirement and contract coverage",
     "title": "Requirement, contract, and evidence coverage",
     "summary": "Trace every supplied requirement and stable contract to its normative page, implementation target, and executable evidence.",
     "kind": "coverage",
+    "starter": True,
     "sections": [
         {
             "id": "requirement-coverage",
