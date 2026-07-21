@@ -24,8 +24,9 @@ Use these as current staging patterns. Discover all live identifiers during each
 ## S3 and AWS credentials
 
 - Prefer a private S3 bucket with block-public-access, server-side encryption, lifecycle rules, and purpose-specific CORS where browser access is required.
-- Prefer IRSA: create a narrowly scoped IAM role and policy, then annotate a project ServiceAccount with that role ARN. This supplies short-lived credentials to pods.
-- Never place static AWS access keys in a Kubernetes Secret.
+- Use a dedicated `<project>-s3-user` and attachable `<project>-s3-access-policy`; never share a credential user or policy between projects.
+- Scope the policy to the project's bucket and approved prefixes. Add only S3 actions evidenced by the source. Include bucket-level `s3:GetBucketLocation` or `s3:ListBucket` only when needed, and include `s3:AbortMultipartUpload` when the source aborts multipart uploads.
+- Create one active access key after explicit approval. Store its ID and secret only in the private `0600` backend environment draft using the repository's exact environment-key names. Never print the secret, commit it, or edit SOPS; the user performs the SOPS update.
 
 ## CloudFront
 
@@ -42,5 +43,12 @@ Use these as current staging patterns. Discover all live identifiers during each
 ## Build and image pins
 
 - Create an ECR repository and project-specific CodeBuild configuration only after confirming the app repo supplies the needed Docker/build files.
-- Use immutable full commit SHA image tags in Kubernetes manifests. Verify the exact tag in ECR before opening the GitOps PR.
+- Before creating or updating either resource, inspect the live `samvaad` ECR repository, CodeBuild project, webhook, and service role. New staging projects must use its current build baseline:
+  - ECR image tag mutability is `MUTABLE`.
+  - CodeBuild uses `LINUX_CONTAINER`, `aws/codebuild/amazonlinux-x86_64-standard:6.0`, `BUILD_GENERAL1_SMALL`, and privileged Docker builds.
+  - CodeBuild uses the same discovered staging-core VPC, core-private subnet, and outbound-unlimited security group as Samvaad.
+  - Attach exactly the four managed policies currently attached to Samvaad’s CodeBuild role; do not add a project-specific inline policy.
+  - The webhook has one `PUSH` filter group whose commit-message regex is `.*[BUILD].*`; pull-request comment approval is `DISABLED`.
+- Preserve the project’s source URL, source ref, image repository name, and required non-secret build variables. Do not copy Samvaad secrets, image tags, or application configuration.
+- Use full commit SHA revision tags in Kubernetes manifests. Verify the exact tag in ECR before opening the GitOps PR.
 - A multi-image project must verify and pin every image it deploys.

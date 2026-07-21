@@ -1,6 +1,6 @@
 ---
 name: staging-aws-infra
-description: Plan and provision AWS-backed Kubernetes infrastructure for a new GitHub project in Newton School staging only. Use when Codex needs to inspect a repository and create or review staging ECR, CodeBuild, shared-ALB routing, Route53, optional S3/IRSA/CloudFront, a private repository-derived secret-draft JSON, and a Kubernetes-cluster-infra pull request. Always run a read-only plan first and wait for explicit user confirmation before any write.
+description: Plan and provision AWS-backed Kubernetes infrastructure for a new GitHub project in Newton School staging only. Use when Codex needs to inspect a repository and create or review staging ECR, CodeBuild, shared-ALB routing, Route53, optional S3 with scoped IAM-user credentials, CloudFront, private backend/frontend environment drafts, and a Kubernetes-cluster-infra pull request. Always run a read-only plan first and wait for explicit user confirmation before any write.
 ---
 
 # Staging AWS Infra
@@ -26,7 +26,7 @@ Create new-project infrastructure in two strictly separated phases. This skill i
 - Work only in the Kubernetes infra repository supplied by the user. Read its `AGENTS.md` and local runbooks before applying.
 - Create a new branch from current `origin/main` only when the user has explicitly confirmed the apply plan. Never push to `main`, merge the PR, or edit `prod/`.
 - Do not delete or rename files under `clusters/`; Flux uses `prune: true`.
-- Do not decrypt, print, commit plaintext, or modify SOPS-encrypted values. Generate a private secret-draft JSON only; the user owns all SOPS edits.
+- Do not decrypt, print, commit plaintext, or modify SOPS-encrypted values. Generate private backend and frontend environment drafts only; the user owns all SOPS edits.
 - Do not automatically delete partially created AWS resources on failure. Report the exact resources created and a safe rollback plan.
 
 ## Inputs to resolve in plan mode
@@ -36,7 +36,7 @@ Require these inputs. Do not select a project name, GitHub repository, topology,
 1. Project slug and accessible canonical GitHub repository (`OWNER/REPOSITORY`).
 2. Public hostnames and optional path routes.
 3. Workload topology: frontend, API, WebSocket API, workers, migration job, scheduled jobs, and ports/health endpoints.
-4. Initial immutable image tag(s), image build instructions, and source SHA.
+4. Initial full-SHA revision tag(s), image build instructions, and source SHA.
 5. Resource requests/limits, replicas, and stateful node-placement needs.
 6. Dependencies: PostgreSQL, Redis, S3, CloudFront, and AWS integrations such as SES.
 7. Required secret-key names and the approved source of each value.
@@ -56,7 +56,7 @@ Complete this gate immediately after the safety preflight and before discovering
 3. Produce a repository resource assessment with each resource marked `required`, `evidence suggests`, `no evidence`, or `undetermined`:
    - ECR/CodeBuild and the image topology;
    - public ALB, DNS, and TargetGroupBindings;
-   - PostgreSQL, Redis, S3, CloudFront, IRSA, SES, and other AWS services;
+   - PostgreSQL, Redis, S3 with IAM-user credentials, CloudFront, SES, and other AWS services;
    - Kubernetes workloads, persistent volumes, migrations, workers, and scheduled jobs;
    - exact environment-key names and their expected source.
 4. Cite the repository path or configuration evidence for every `required` or `evidence suggests` classification. Do not select an optional resource solely from a framework convention.
@@ -80,9 +80,9 @@ Complete this gate immediately after the safety preflight and before discovering
    - AWS creates, updates, or collisions;
    - target group health checks and ALB host/path rules;
    - DNS records;
-   - optional database, Redis, S3, CloudFront, IRSA, and IAM choices;
+   - optional database, Redis, S3, CloudFront, and IAM-user choices;
    - Kubernetes manifests and image pins;
-   - a secret-key matrix sourced from the repository: exact key, repository evidence, value source, and whether it will be in the private draft JSON or remains user-required;
+   - an environment-key matrix sourced from the repository: exact key, repository evidence, value source, target private environment draft, and whether it remains user-required;
    - validation commands and rollback steps.
 9. Explicitly state that no write has occurred and ask for confirmation of that exact plan.
 
@@ -92,8 +92,8 @@ Execute only the approved plan and preserve the requested scope.
 
 ### AWS build and routing
 
-1. Create or verify the ECR repository with safe project-specific settings.
-2. Create or verify the CodeBuild project and least-privilege service role. Match the project’s build requirements; use privileged mode only for Docker builds. Configure the approved GitHub webhook behavior and verify the initial immutable image tags exist in ECR before pinning them in GitOps.
+1. Create or verify the ECR repository using the current Samvaad-parity baseline from `references/staging-patterns.md`.
+2. Create or verify the CodeBuild project and service role using that same baseline. Preserve only project-specific source, image, and environment values; use privileged mode only for Docker builds. Configure the approved GitHub webhook behavior and verify the initial full-SHA revision tags exist in ECR before pinning them in GitOps.
 3. For every public Service, create a distinct IP target group in the discovered staging VPC with the approved HTTP port and health path.
 4. Add collision-free HTTPS listener rules to the discovered shared ALB. Use host and path conditions exactly as approved; never change another project’s rule.
 5. Create approved Route53 `A` and `AAAA` aliases to the shared ALB. Verify records resolve to the intended ALB.
@@ -102,25 +102,25 @@ Execute only the approved plan and preserve the requested scope.
 
 1. PostgreSQL: use the existing staging in-cluster StatefulSet/Flux Helm pattern with `ebs-csi-gp3` persistent storage unless the approved plan explicitly selects another supported design. Add only SOPS-encrypted credential references.
 2. Redis: use the existing in-cluster standalone Redis pattern. Make authentication and persistence explicit; schedule stateful workloads on the appropriate existing node group.
-3. S3: create a private encrypted bucket with block-public-access and scoped lifecycle/CORS settings. Prefer a project ServiceAccount plus IRSA and least-privilege bucket/prefix policy; do not use static AWS credentials in application secrets.
+3. S3: create a private encrypted bucket with block-public-access and scoped lifecycle/CORS settings. Create a dedicated `<project>-s3-user` and an attachable `<project>-s3-access-policy` limited to the approved bucket and prefix. Derive the exact S3 actions from repository calls; for multipart uploads include `s3:AbortMultipartUpload` when the source aborts uploads. Create one active access key only after approval and write it once to the private backend environment draft under the repository's exact AWS credential environment-key names. Never print the secret access key, commit it, or modify SOPS; the user copies the private draft values into SOPS later.
 4. CloudFront: create a distribution only when approved. Derive behaviors from the inspected application routes. For an S3 origin, use Origin Access Control and a distribution-scoped bucket policy; never make the bucket public. For an ALB origin, use HTTPS and ensure API, authenticated, WebSocket, and mutation routes are not cached. For custom aliases, use an ACM certificate in `us-east-1`, validate it through the approved Route53 zone, then create approved `A` and `AAAA` aliases to the distribution. Report the distribution ID, domain, origin, aliases, cache policies, and certificate ARN.
-5. AWS service access: extend the project IRSA role only with approved actions and resource ARNs.
+5. AWS service access: use the project S3 IAM user only for the approved bucket/prefix. Do not attach AWS-managed broad-access policies or reuse another project's user, policy, or credentials.
 
-### Private secret-draft JSON
+### Private environment drafts
 
-1. Generate the draft only after the approved infrastructure exists and its facts are known. Never write SOPS values automatically.
-2. Build `required-keys.json` from the inspected repository's exact environment-key names. Build `infra-values.json` only from approved created-resource facts and approved generated credentials, such as the in-cluster database URL/password, Redis URL, S3 bucket/region, CloudFront distribution domain, or approved service role data.
-3. Run `scripts/render-secret-draft.py --required-keys <required-keys.json> --infra-values <infra-values.json> --output <private-path>`.
-4. The output is a flat JSON object containing every required repository key. It fills only exact keys with known infrastructure values and uses `__USER_INPUT_REQUIRED__` for all remaining values.
-5. Write the file outside any Git working tree with mode `0600`. Do not log, attach, commit, upload, place in the PR, or show its values in chat. Report only the private path, derived-key names, and unresolved-key names.
-6. Stop for the user to review the draft, replace placeholders, and update the SOPS manifests themselves. Resume GitOps validation and PR creation only after the user confirms that their SOPS work is complete.
+1. Generate drafts only after the approved infrastructure exists and its facts are known. Never write SOPS values automatically.
+2. For every application directory that provides an `.env.example`, produce one private `.env` draft from that exact template. Preserve its comments, ordering, and default values. Do not add generic keys or keys absent from the template.
+3. Fill only approved infrastructure-derived or generated values under their exact repository keys. Blank every required user-owned value, even if the example supplies a local-development value. Preserve non-required example defaults so the user can change them manually.
+4. Run `scripts/render-env-draft.py --example <app>/.env.example --values <private-values.env> --blank-key <user-key> --output <private-path>/<app>.env` for each application. The private values input must contain only keys from that application's example and must never be logged.
+5. Write each output outside any Git working tree with mode `0600`. Do not log, attach, commit, upload, place in the PR, or show its values in chat. Report only the private paths, derived-key names, and blank user-required-key names.
+6. Stop for the user to review the drafts and update the SOPS manifests themselves. Resume GitOps validation and PR creation only after the user confirms that their SOPS work is complete.
 
 ### GitOps pull request
 
 1. Fetch `origin/main`, create a new branch from it, and keep all work in that branch.
-2. Create `clusters/newton-core/staging/<project>/` with only the approved resources: namespace, project kustomization, workloads, Services, TargetGroupBindings, optional ServiceAccount/IRSA, ConfigMaps, database/Redis manifests, and SOPS secret references.
+2. Create `clusters/newton-core/staging/<project>/` with only the approved resources: namespace, project kustomization, workloads, Services, TargetGroupBindings, ConfigMaps, database/Redis manifests, and SOPS secret references.
 3. Add the project directory to `clusters/newton-core/staging/kustomization.yaml` without altering unrelated entries.
-4. Use immutable full-SHA ECR image tags, health probes, resource requests/limits, and migration ordering appropriate to the app.
+4. Use full-SHA ECR revision tags, health probes, resource requests/limits, and migration ordering appropriate to the app.
 5. Validate the whole staging overlay with:
 
    ```bash
@@ -137,4 +137,4 @@ Only when the user asks to verify a merged PR:
 1. Confirm Flux observes the merged revision.
 2. Check Kubernetes rollout status and target-group health.
 3. Test approved public hosts and health endpoints.
-4. Verify optional PostgreSQL, Redis, S3, and IRSA behavior without exposing credentials.
+4. Verify optional PostgreSQL, Redis, and S3 behavior without exposing credentials.
